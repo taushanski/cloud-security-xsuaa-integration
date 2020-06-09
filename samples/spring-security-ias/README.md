@@ -1,6 +1,5 @@
 # Description
-This sample demonstrates how to develop a Kernel Service as a spring-boot application, which is basically a Service Broker, and how it can be consumed. As of version `TODO` the `token-client` client library
-- supports mutual TLS for Apache Rest clients
+This sample demonstrates how to develop a Kernel Service as a spring-boot application, which is basically a Service Broker, and how it can be consumed. The `token-client` client library supports mutual TLS for Apache Rest clients and as of version `TODO`  it
 - exchanges IAS Open ID tokens (OIDC) with JWT bearer assertions using the `/delegation/oauth/token` endpoint of the XSUAA Authorization Server. This validates the consumer via X.509 client certificate and issues a JWT bearer assertion including the users authorizations.
 
 ![](overview.png)
