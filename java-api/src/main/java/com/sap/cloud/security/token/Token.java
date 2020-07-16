@@ -95,6 +95,16 @@ public interface Token {
 	Instant getExpiration();
 
 	/**
+	 * Returns the claim of the given name as instant. If the vale for the
+	 * given claim cannot be parsed as an instant, it will throw a {@link JsonParsingException}.
+	 *
+	 * @param claimName the name of the claim.
+	 * @return the instant or null if the claim is not found.
+	 */
+	@Nullable
+	Instant getClaimAsInstant(@Nonnull String claimName);
+
+	/**
 	 * Returns true if the token is expired.
 	 *
 	 * @return true if the token is expired.

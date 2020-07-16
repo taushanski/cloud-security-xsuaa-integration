@@ -99,13 +99,19 @@ public class AbstractTokenTest {
 	}
 
 	@Test
-	public void getNotBefore_notContained_shouldBeNull() {
-		assertThat(String.valueOf(cut.getNotBefore().toEpochMilli())).startsWith("1572017569"); // consider iat
+	public void getNotBefore_notContained_fallsBackToIat() {
+		assertThat(cut.getNotBefore()).isEqualTo(Instant.ofEpochMilli(1572017569000L));
 	}
 
 	@Test
 	public void getTokenValue() {
 		assertThat(cut.getTokenValue()).isEqualTo(jwtString);
+	}
+
+	@Test
+	public void getClaimAsInstant() {
+		assertThat(cut.getClaimAsInstant(TokenClaims.XSUAA.ISSUED_AT)).isEqualTo(Instant.ofEpochMilli(1572017569000L));
+		assertThat(cut.getClaimAsInstant("does not exist")).isNull();
 	}
 
 	@Test

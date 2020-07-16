@@ -97,10 +97,16 @@ public abstract class AbstractToken implements Token {
 
 	@Nullable
 	@Override
+	public Instant getClaimAsInstant(@Nonnull String claimName) {
+		return tokenBody.getAsInstant(claimName);
+	}
+
+	@Nullable
+	@Override
 	public Instant getNotBefore() {
-		return tokenBody.contains(NOT_BEFORE)
-				? tokenBody.getAsInstant(NOT_BEFORE)
-				: tokenBody.getAsInstant(ISSUED_AT);
+		return hasClaim(NOT_BEFORE)
+				? getClaimAsInstant(NOT_BEFORE)
+				: getClaimAsInstant(ISSUED_AT);
 	}
 
 	@Override

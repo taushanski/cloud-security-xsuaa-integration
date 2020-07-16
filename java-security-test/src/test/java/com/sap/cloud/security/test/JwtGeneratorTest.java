@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.List;
@@ -123,6 +124,16 @@ public class JwtGeneratorTest {
 				.createToken();
 
 		assertThat(token.getClaimAsString(TokenClaims.XSUAA.CLIENT_ID)).isEqualTo(clientId);
+	}
+
+	@Test
+	public void withClaimValueInstant_setsInstant() {
+		Instant date = LocalDateTime.of(2020, 1, 1, 0, 0).toInstant(ZoneOffset.UTC);
+		Token token = cut
+				.withClaimValue("myClaim", date)
+				.createToken();
+
+		assertThat(token.getClaimAsInstant("myClaim")).isEqualTo(date);
 	}
 
 	@Test

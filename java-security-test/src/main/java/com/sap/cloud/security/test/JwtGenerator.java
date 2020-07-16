@@ -108,12 +108,12 @@ public class JwtGenerator {
 	}
 
 	/**
-	 * Sets the claim with the given name to the given string value.
+	 * Sets the claim with the given name to the given json object value.
 	 *
 	 * @param claimName
 	 *            the name of the claim to be set.
 	 * @param object
-	 *            the string value of the claim to be set.
+	 *            the json object value of the claim to be set.
 	 * @return the builder object.
 	 * @throws JsonParsingException
 	 *             if the given object does not contain valid json.
@@ -125,6 +125,20 @@ public class JwtGenerator {
 		} catch (JSONException e) {
 			throw new JsonParsingException(e.getMessage());
 		}
+		return this;
+	}
+
+	/**
+	 * Sets the claim with the given name to the given instant value.
+	 *
+	 * @param claimName
+	 *            the name of the claim to be set.
+	 * @param instant
+	 *            the instant value to be set.
+	 * @return the builder object.
+	 */
+	public JwtGenerator withClaimValue(@Nonnull String claimName, @Nonnull Instant instant) {
+		jsonPayload.put(claimName, instant.getEpochSecond());
 		return this;
 	}
 
