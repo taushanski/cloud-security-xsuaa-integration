@@ -86,6 +86,7 @@
 		<module>java-api</module>
 		<module>java-security</module>
 		<module>java-security-test</module>
+		<module>java-security-commons</module>
 		<module>spring-xsuaa</module>
 		<module>spring-xsuaa-it</module>
 		<module>spring-xsuaa-test</module>
@@ -104,6 +105,11 @@
 			<dependency>
 				<groupId>${project.groupId}</groupId>
 				<artifactId>token-client</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>${parent-groupId}</groupId>
+				<artifactId>java-security-commons</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

@@ -1,7 +1,5 @@
 package com.sap.cloud.security.config;
 
-import com.sap.cloud.security.xsuaa.Assertions;
-
 import javax.annotation.Nonnull;
 import java.net.URI;
 import java.util.HashMap;
@@ -31,7 +29,9 @@ public class OAuth2ServiceConfigurationBuilder {
 	 * @return this builder
 	 */
 	public static OAuth2ServiceConfigurationBuilder forService(@Nonnull Service service) {
-		Assertions.assertNotNull(service, "Service must not be null!");
+		if (service == null) {
+			throw new IllegalArgumentException("Service must not be null!");
+		}
 		OAuth2ServiceConfigurationBuilder instance = new OAuth2ServiceConfigurationBuilder();
 		instance.service = service;
 		return instance;
