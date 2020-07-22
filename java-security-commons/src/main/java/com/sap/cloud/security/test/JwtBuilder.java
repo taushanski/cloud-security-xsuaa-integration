@@ -6,7 +6,6 @@ import static com.sap.cloud.security.token.TokenHeader.*;
 import com.sap.cloud.security.config.Service;
 import com.sap.cloud.security.json.JsonObject;
 import com.sap.cloud.security.json.JsonParsingException;
-import com.sap.cloud.security.token.Token;
 import com.sap.cloud.security.token.TokenClaims;
 import com.sap.cloud.security.token.validation.validators.JwtSignatureAlgorithm;
 import org.apache.commons.io.IOUtils;
@@ -25,12 +24,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Jwt {@link Token} builder class to generate tokes for testing purposes.
+ * Builder class to generate encoded token for testing purposes.
  */
-public class JwtGenerator {
+public class JwtBuilder {
 	public static final Instant NO_EXPIRE_DATE = new GregorianCalendar(2190, 11, 31).getTime().toInstant();
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(JwtGenerator.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(JwtBuilder.class);
 	private static final String DEFAULT_JWKS_URL = "http://localhost/token_keys";
 	private static final String DEFAULT_KEY_ID = "default-kid";
 	private static final char DOT = '.';
@@ -48,31 +47,33 @@ public class JwtGenerator {
 	private List<String> scopes = new ArrayList<>();
 	private List<String> localScopes = new ArrayList<>();
 
-	private JwtGenerator() {
+	private JwtBuilder() {
 		// see factory method getInstance()
 	}
 
-	public static JwtGenerator getInstance(Service service, String clientId) {
-		return getInstance(service, JwtGenerator::calculateSignature, clientId);
+	public static JwtBuilder getInstance(Service service, String clientId) {
+		return new JwtBuilder(service, JwtBuilder::calculateSignature, clientId);
 	}
 
-	// for testing
-	static JwtGenerator getInstance(Service service, SignatureCalculator signatureCalculator, String clientId) {
-		JwtGenerator instance = new JwtGenerator();
-		instance.service = service;
-		instance.signatureCalculator = signatureCalculator;
-		instance.signatureAlgorithm = JwtSignatureAlgorithm.RS256;
-		setTokenDefaults(clientId, instance);
-		return instance;
+	// can be used for testing
+	static JwtBuilder getInstance(Service service, SignatureCalculator signatureCalculator, String clientId) {
+		return new JwtBuilder(service, signatureCalculator, clientId);
 	}
 
-	private static void setTokenDefaults(String clientId, JwtGenerator instance) {
-		instance.withHeaderParameter(ALGORITHM, instance.signatureAlgorithm.value());
-		instance.withHeaderParameter(KEY_ID, DEFAULT_KEY_ID);
-		instance.withClaimValue(TokenClaims.XSUAA.CLIENT_ID, clientId);
-		instance.withExpiration(NO_EXPIRE_DATE);
-		if (instance.service == Service.XSUAA) {
-			instance.withHeaderParameter(JWKS_URL, DEFAULT_JWKS_URL);
+	private JwtBuilder(Service service, SignatureCalculator signatureCalculator, String clientId) {
+		this.service = service;
+		this.signatureCalculator = signatureCalculator;
+		this.signatureAlgorithm = JwtSignatureAlgorithm.RS256;
+		setTokenDefaults(clientId);
+	}
+
+	private void setTokenDefaults(String clientId) {
+		withHeaderParameter(ALGORITHM, signatureAlgorithm.value());
+		withHeaderParameter(KEY_ID, DEFAULT_KEY_ID);
+		withClaimValue(TokenClaims.XSUAA.CLIENT_ID, clientId);
+		withExpiration(NO_EXPIRE_DATE);
+		if (service == Service.XSUAA) {
+			withHeaderParameter(JWKS_URL, DEFAULT_JWKS_URL);
 		}
 	}
 
@@ -85,7 +86,7 @@ public class JwtGenerator {
 	 *            the string value of the header parameter to be set.
 	 * @return the builder object.
 	 */
-	public JwtGenerator withHeaderParameter(String parameterName, String value) {
+	public JwtBuilder withHeaderParameter(String parameterName, String value) {
 		jsonHeader.put(parameterName, value);
 		return this;
 	}
@@ -99,7 +100,7 @@ public class JwtGenerator {
 	 *            the string value of the claim to be set.
 	 * @return the builder object.
 	 */
-	public JwtGenerator withClaimValue(String claimName, String value) {
+	public JwtBuilder withClaimValue(String claimName, String value) {
 		assertClaimIsSupported(claimName);
 		jsonPayload.put(claimName, value);
 		return this;
@@ -116,7 +117,7 @@ public class JwtGenerator {
 	 * @throws JsonParsingException
 	 *             if the given object does not contain valid json.
 	 */
-	public JwtGenerator withClaimValue(String claimName, JsonObject object) {
+	public JwtBuilder withClaimValue(String claimName, JsonObject object) {
 		assertClaimIsSupported(claimName);
 		try {
 			jsonPayload.put(claimName, new JSONObject(object.asJsonString()));
@@ -135,7 +136,7 @@ public class JwtGenerator {
 	 *            the string values of the claims to be set.
 	 * @return the builder object.
 	 */
-	public JwtGenerator withClaimValues(String claimName, String... values) {
+	public JwtBuilder withClaimValues(String claimName, String... values) {
 		assertClaimIsSupported(claimName);
 		jsonPayload.put(claimName, values);
 		return this;
@@ -154,7 +155,7 @@ public class JwtGenerator {
 	 *            format, e.g. "/claims.json"
 	 * @return the builder object.
 	 */
-	public JwtGenerator withClaimsFromFile(String claimsJsonResource) throws IOException {
+	public JwtBuilder withClaimsFromFile(String claimsJsonResource) throws IOException {
 		String claimsJson = IOUtils.resourceToString(claimsJsonResource, StandardCharsets.UTF_8);
 		JSONObject claimsAsJsonObject;
 		try {
@@ -182,7 +183,7 @@ public class JwtGenerator {
 	 *            the moment in time when the token will be expired.
 	 * @return the builder object.
 	 */
-	public JwtGenerator withExpiration(@Nonnull Instant expiration) {
+	public JwtBuilder withExpiration(@Nonnull Instant expiration) {
 		jsonPayload.put(TokenClaims.EXPIRATION, expiration.getEpochSecond());
 		return this;
 	}
@@ -195,7 +196,7 @@ public class JwtGenerator {
 	 *            the signature algorithm.
 	 * @return the builder object.
 	 */
-	public JwtGenerator withSignatureAlgorithm(JwtSignatureAlgorithm signatureAlgorithm) {
+	public JwtBuilder withSignatureAlgorithm(JwtSignatureAlgorithm signatureAlgorithm) {
 		if (signatureAlgorithm != JwtSignatureAlgorithm.RS256) {
 			throw new UnsupportedOperationException(signatureAlgorithm + " is not supported yet");
 		}
@@ -210,7 +211,7 @@ public class JwtGenerator {
 	 *            the private key.
 	 * @return the builder object.
 	 */
-	public JwtGenerator withPrivateKey(PrivateKey privateKey) {
+	public JwtBuilder withPrivateKey(PrivateKey privateKey) {
 		this.privateKey = privateKey;
 		return this;
 	}
@@ -228,7 +229,7 @@ public class JwtGenerator {
 	 * @throws IllegalArgumentException
 	 *             if service is not {@link Service#XSUAA}
 	 */
-	public JwtGenerator withScopes(String... scopes) {
+	public JwtBuilder withScopes(String... scopes) {
 		if (service == Service.XSUAA) {
 			this.scopes = Arrays.asList(scopes);
 			putScopesInJsonPayload();
@@ -254,7 +255,7 @@ public class JwtGenerator {
 	 * @throws IllegalStateException
 	 *             if the appId has not been set via {@link #withAppId(String)}
 	 */
-	public JwtGenerator withLocalScopes(String... scopes) {
+	public JwtBuilder withLocalScopes(String... scopes) {
 		if (appId == null) {
 			throw new IllegalStateException("Cannot create local scopes because appId has not been set!");
 		}
@@ -278,9 +279,13 @@ public class JwtGenerator {
 	 *            the appId to be used for local scopes creation
 	 * @return the JwtGenerator itself
 	 */
-	public JwtGenerator withAppId(String appId) {
+	public JwtBuilder withAppId(String appId) {
 		this.appId = appId;
 		return this;
+	}
+
+	public Service getService() {
+		return service;
 	}
 
 	private void putScopesInJsonPayload() {
@@ -289,20 +294,32 @@ public class JwtGenerator {
 		jsonPayload.put(TokenClaims.XSUAA.SCOPES, resultingScopes);
 	}
 
+	/**
+	 * Builds and signs the encoded token using the the algorithm set via
+	 * {@link #withSignatureAlgorithm(JwtSignatureAlgorithm)} and the given key. By
+	 * default{@link JwtSignatureAlgorithm#RS256} is used.
+	 *
+	 * @return the encoded token.
+	 */
+	public String createEncodedToken() {
+		createAudienceClaim();
+
+		if (privateKey == null) {
+			throw new IllegalStateException("Private key was not set!");
+		}
+		String header = base64Encode(jsonHeader.toString().getBytes());
+		String payload = base64Encode(jsonPayload.toString().getBytes());
+		String headerAndPayload = header + DOT + payload;
+		String signature = calculateSignature(headerAndPayload);
+		return headerAndPayload + DOT + signature;
+	}
+
 	private void createAudienceClaim() {
 		if (service == Service.IAS) {
 			jsonPayload.put(AUDIENCE, jsonPayload.getString(TokenClaims.XSUAA.CLIENT_ID));
 		} else {
 			jsonPayload.put(AUDIENCE, Arrays.asList(jsonPayload.getString(TokenClaims.XSUAA.CLIENT_ID)));
 		}
-	}
-
-	private String createTokenAsString() {
-		String header = base64Encode(jsonHeader.toString().getBytes());
-		String payload = base64Encode(jsonPayload.toString().getBytes());
-		String headerAndPayload = header + DOT + payload;
-		String signature = calculateSignature(headerAndPayload);
-		return headerAndPayload + DOT + signature;
 	}
 
 	private static byte[] calculateSignature(PrivateKey privateKey, JwtSignatureAlgorithm signatureAlgorithm,
