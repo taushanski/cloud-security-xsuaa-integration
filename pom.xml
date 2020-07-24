@@ -57,25 +57,27 @@
 		<maven.source.plugin.version>3.1.0</maven.source.plugin.version>
 		<!-- make sure that spring core and spring boot versions are compatible-->
 		<spring.boot.version>2.3.1.RELEASE</spring.boot.version>
-		<spring.core.version>5.2.7.RELEASE</spring.core.version>
+		<spring.core.version>5.2.8.RELEASE</spring.core.version>
 		<spring.security.version>5.3.3.RELEASE</spring.security.version>
 		<spring.security.oauth2.version>2.5.0.RELEASE</spring.security.oauth2.version>
 		<spring.security.jwt.version>1.1.1.RELEASE</spring.security.jwt.version>
-		<reactor.version>3.3.7.RELEASE</reactor.version>
+		<reactor.version>3.3.8.RELEASE</reactor.version>
 		<log4j.version>2.13.3</log4j.version>
 		<slf4j.api.version>1.7.30</slf4j.api.version> <!--see also here http://www.slf4j.org/faq.html#changesInVersion18 -->
 		<org.json.version>20200518</org.json.version>
 		<google.jsr305.version>3.0.2</google.jsr305.version>
-		<apache.httpclient.version>4.5.9</apache.httpclient.version>
+		<apache.httpclient.version>4.5.12</apache.httpclient.version>
 		<caffeine.version>2.8.2</caffeine.version>
-		<commons.io.version>2.6</commons.io.version>
-		<javax.servlet.api.version>3.0.1</javax.servlet.api.version>
+		<commons.io.version>2.7</commons.io.version>
+		<javax.servlet.version>3.0.1</javax.servlet.version> <!-- for SAP Java Buildpack -->
+		<jetty.version>9.4.24.v20191120</jetty.version> <!-- java-security-test TODO upgrade to 9.4.30.v20200611 -->
 		<mockwebserver.version>3.9.1</mockwebserver.version>
+		<wiremock.version>2.26.0</wiremock.version>
 		<junit.version>4.12</junit.version>
 		<hamcrest.version>1.3</hamcrest.version>
 		<mockito.version>2.23.0</mockito.version>
-		<assertj.version>3.13.2</assertj.version>
-		<reactor.test.version>3.2.12.RELEASE</reactor.test.version>
+		<assertj.version>3.16.1</assertj.version>
+		<reactor.test.version>${reactor.version}</reactor.test.version>
 		<skipTests>false</skipTests>
 		<jacoco.skip>${skipTests}</jacoco.skip>
 	</properties>
@@ -250,7 +252,7 @@
 			<dependency>
 				<groupId>javax.servlet</groupId>
 				<artifactId>javax.servlet-api</artifactId>
-				<version>${javax.servlet.api.version}</version>
+				<version>${javax.servlet.version}</version>
 			</dependency>
 			<!--testing-->
 			<dependency>
@@ -292,7 +294,6 @@
 	</dependencyManagement>
 
 	<profiles>
-
 		<profile>
 			<id>default</id>
 			<activation>
